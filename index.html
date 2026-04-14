@@ -4,6 +4,14 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SmokeTrack India</title>
+<script>
+// Apply system theme immediately before render to avoid flash
+(function(){
+  const saved=localStorage.getItem('st-theme');
+  const sys=window.matchMedia('(prefers-color-scheme: light)').matches?'light':'dark';
+  document.documentElement.setAttribute('data-theme', saved||sys);
+})();
+</script>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800;900&family=Syne:wght@600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
 [data-theme="dark"]{--bg:#0d0d0f;--surface:#16161a;--surface2:#1e1e24;--surface3:#252530;--border:rgba(255,255,255,0.09);--border2:rgba(255,255,255,0.2);--text:#f0eee8;--muted:#888;--muted2:#444;--modal-bg:rgba(0,0,0,0.75);}
@@ -34,13 +42,13 @@ label.ob-label{font-size:.76rem;color:var(--muted);display:block;margin-bottom:3
 .app-logo{font-family:var(--font-head);font-size:1.45rem;font-weight:700;color:var(--accent);}
 .header-right{display:flex;gap:7px;align-items:center;flex-wrap:wrap;}
 .streak-badge{background:rgba(255,179,71,.15);color:var(--accent2);border:1px solid rgba(255,179,71,.3);border-radius:20px;padding:3px 12px;font-size:.76rem;font-weight:600;}
-.stats-row{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-bottom:1.4rem;}
-@media(max-width:700px){.stats-row{grid-template-columns:repeat(4,1fr);}}
-@media(max-width:420px){.stats-row{grid-template-columns:repeat(3,1fr);}}
-.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:.55rem .6rem;}
-.stat-label{font-size:.58rem;color:var(--muted);text-transform:uppercase;letter-spacing:.3px;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.stat-val{font-family:var(--font-num);font-size:1.15rem;font-weight:800;line-height:1;letter-spacing:-.5px;}
-.stat-sub{font-size:.58rem;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-bottom:1.3rem;}
+@media(max-width:500px){.stats-row{grid-template-columns:repeat(4,1fr);gap:4px;}}
+@media(max-width:360px){.stats-row{grid-template-columns:repeat(3,1fr);gap:3px;}}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:.45rem .5rem;}
+.stat-label{font-size:.55rem;color:var(--muted);text-transform:uppercase;letter-spacing:.2px;margin-bottom:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.stat-val{font-family:var(--font-num);font-size:1rem;font-weight:800;line-height:1;letter-spacing:-.5px;}
+.stat-sub{font-size:.52rem;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .stat-card.money .stat-val{color:var(--accent2);}
 .stat-card.cigs .stat-val{color:var(--accent);}
 .stat-card.saved .stat-val{color:var(--healthy);}
@@ -204,8 +212,8 @@ select option{background:var(--surface2);color:var(--text);}
     <div class="tab active" onclick="switchTab('log')">Log</div>
     <div class="tab" onclick="switchTab('health')">Body</div>
     <div class="tab" onclick="switchTab('money')">Money</div>
-    <div class="tab" onclick="switchTab('settings')">Settings</div>
     <div class="tab" onclick="switchTab('history')">History</div>
+    <div class="tab" onclick="switchTab('settings')">Settings</div>
   </div>
 
   <div class="tab-content active" id="tab-log">
@@ -213,7 +221,7 @@ select option{background:var(--surface2);color:var(--text);}
       <span class="s-label">Buying as:</span>
       <div class="stog-wrap">
         <div class="stog-btn on" id="btn-pack" onclick="setSingleMode(false)">Pack</div>
-        <div class="stog-btn" id="btn-single" onclick="setSingleMode(true)">Single piece (+20%)</div>
+        <div class="stog-btn" id="btn-single" onclick="setSingleMode(true)">Single piece (+15%)</div>
       </div>
       <span class="s-label" style="margin-left:6px;">Custom single ₹</span>
       <input class="single-custom" type="number" id="custom-single-price" placeholder="auto" min="1">
@@ -319,40 +327,55 @@ select option{background:var(--surface2);color:var(--text);}
 <div id="toast"></div>
 
 <script>
+// Prices updated to Feb 2026 post-excise MRP (per 20-stick pack equivalent)
+// Sources: ITC/Godfrey Phillips revised MRPs, PTI distributor reports Feb 2026
 const BRANDS=[
-  {name:"Gold Flake Kings",price:250,tar:12,co:14,nic:0.9},
-  {name:"Gold Flake Premium",price:220,tar:10,co:12,nic:0.8},
-  {name:"Gold Flake Lights",price:220,tar:7,co:9,nic:0.6},
-  {name:"Wills Classic",price:270,tar:11,co:13,nic:0.85},
-  {name:"Wills Navy Cut",price:270,tar:9,co:11,nic:0.75},
-  {name:"Four Square",price:160,tar:14,co:16,nic:1.0},
-  {name:"Bristol",price:150,tar:15,co:17,nic:1.1},
-  {name:"Scissors",price:120,tar:16,co:18,nic:1.2},
-  {name:"Charms",price:130,tar:15,co:16,nic:1.0},
-  {name:"Classic Milds",price:250,tar:8,co:10,nic:0.7},
-  {name:"Marlboro Red",price:400,tar:10,co:12,nic:0.9},
-  {name:"Marlboro Gold",price:400,tar:7,co:9,nic:0.6},
-  {name:"Dunhill",price:450,tar:8,co:10,nic:0.65},
-  {name:"555",price:380,tar:11,co:13,nic:0.85},
-  {name:"Lucky Strike",price:380,tar:10,co:12,nic:0.8},
-  {name:"Camel",price:350,tar:9,co:11,nic:0.75},
-  {name:"Red & White",price:130,tar:16,co:18,nic:1.2},
-  {name:"Benson & Hedges",price:430,tar:9,co:11,nic:0.75},
-  {name:"Panama",price:150,tar:15,co:17,nic:1.1},
-  {name:"Capstan",price:140,tar:16,co:18,nic:1.2},
+  {name:"Gold Flake Kings",   price:440, tar:12,co:14,nic:0.9},  // 10pk ₹220 → ₹440/20
+  {name:"Gold Flake Premium", price:480, tar:10,co:12,nic:0.8},  // 10pk ₹240 → ₹480/20
+  {name:"Gold Flake Lights",  price:440, tar:7, co:9, nic:0.6},  // 10pk ₹220 → ₹440/20
+  {name:"Wills Classic",      price:480, tar:11,co:13,nic:0.85}, // 10pk ₹240 → ₹480/20
+  {name:"Wills Classic Milds",price:440, tar:9, co:11,nic:0.75}, // 10pk ₹220 → ₹440/20
+  {name:"Wills Navy Cut",     price:240, tar:10,co:12,nic:0.8},  // 10pk ₹120 → ₹240/20
+  {name:"Classic Connect",    price:350, tar:8, co:10,nic:0.65}, // 20pk ₹350 (slim 97mm)
+  {name:"Four Square",        price:320, tar:14,co:16,nic:1.0},  // ~₹16/stick post hike
+  {name:"Bristol Filter",     price:280, tar:15,co:17,nic:1.1},  // ~₹14/stick post hike
+  {name:"Scissors",           price:260, tar:16,co:18,nic:1.2},  // ~₹13/stick
+  {name:"Charms",             price:280, tar:15,co:16,nic:1.0},  // ~₹14/stick
+  {name:"Red & White KS",     price:360, tar:14,co:16,nic:1.1},  // premium 84mm hike
+  {name:"Panama",             price:280, tar:15,co:17,nic:1.1},  // ~₹14/stick
+  {name:"Capstan",            price:260, tar:16,co:18,nic:1.2},  // ~₹13/stick
+  {name:"Marlboro Red",       price:560, tar:10,co:12,nic:0.9},  // ₹400 + ~₹8/stick hike
+  {name:"Marlboro Gold",      price:540, tar:7, co:9, nic:0.6},  // ₹400 + ~₹7/stick hike
+  {name:"Dunhill",            price:620, tar:8, co:10,nic:0.65}, // ultra-premium, heavy hike
+  {name:"Lucky Strike",       price:540, tar:10,co:12,nic:0.8},  // ₹380 + ~₹8/stick hike
+  {name:"Camel",              price:500, tar:9, co:11,nic:0.75}, // ₹350 + ~₹7.5/stick hike
+  {name:"Benson & Hedges",    price:600, tar:9, co:11,nic:0.75}, // premium, heavy hike
 ];
 
 let state={yearsSmoked:1,perDay:10,lastSmoke:null,favBrands:[],log:[],totalCigs:0,totalSpent:0,quitDate:null,baselinePerDay:10,singleMode:false};
 let obData={yearsSmoked:1,brands:[]};
 let modalMode='log';
 
+function syncThemeToggles(){
+  const isDark=document.documentElement.getAttribute('data-theme')==='dark';
+  ['tl-dark','tl-dark2'].forEach(id=>{const el=document.getElementById(id);if(el)el.classList.toggle('on',isDark);});
+  ['tl-light','tl-light2'].forEach(id=>{const el=document.getElementById(id);if(el)el.classList.toggle('on',!isDark);});
+}
 function toggleTheme(){
   const html=document.documentElement;
   const isDark=html.getAttribute('data-theme')==='dark';
-  html.setAttribute('data-theme',isDark?'light':'dark');
-  ['tl-dark','tl-dark2'].forEach(id=>{const el=document.getElementById(id);if(el)el.classList.toggle('on',!isDark);});
-  ['tl-light','tl-light2'].forEach(id=>{const el=document.getElementById(id);if(el)el.classList.toggle('on',isDark);});
+  const next=isDark?'light':'dark';
+  html.setAttribute('data-theme',next);
+  localStorage.setItem('st-theme',next);
+  syncThemeToggles();
 }
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change',e=>{
+  if(!localStorage.getItem('st-theme')){
+    document.documentElement.setAttribute('data-theme',e.matches?'dark':'light');
+    syncThemeToggles();
+  }
+});
+document.addEventListener('DOMContentLoaded',syncThemeToggles);
 
 function selectOpt(el,years){
   el.parentElement.querySelectorAll('.ob-option').forEach(o=>o.classList.remove('selected'));
@@ -411,7 +434,7 @@ function logCig(brandIdx){
   const b=BRANDS[brandIdx];if(!b)return;
   const custom=parseFloat(document.getElementById('custom-single-price').value);
   let perCig=b.price/20;
-  if(state.singleMode)perCig=(!isNaN(custom)&&custom>0)?custom:(b.price/20)*1.2;
+  if(state.singleMode)perCig=(!isNaN(custom)&&custom>0)?custom:(b.price/20)*1.15;
   const entry={time:new Date(),brand:brandIdx,price:perCig,single:state.singleMode};
   state.log.push(entry);state.totalCigs++;state.totalSpent+=perCig;
   showToast('+1 '+b.name);
@@ -637,9 +660,10 @@ function renderLung(){
   <line x1="90" y1="72" x2="123" y2="87" stroke="${airwayCol}" stroke-width="1.4"/>
   <line x1="90" y1="92" x2="120" y2="104" stroke="${airwayCol}" stroke-width="1.2"/>
 
-  <!-- % label inside lung -->
-  <text x="90" y="148" text-anchor="middle" font-size="18" font-weight="800" font-family="Montserrat,sans-serif" fill="white" opacity="0.92">${lc.toFixed(0)}%</text>
-  <text x="90" y="164" text-anchor="middle" font-size="8.5" font-family="DM Sans,sans-serif" fill="white" opacity="0.7">healthy</text>
+  <!-- % label — upper lung, above bronchi, with semi-transparent pill -->
+  <rect x="62" y="60" width="56" height="34" rx="10" fill="rgba(0,0,0,0.32)"/>
+  <text x="90" y="81" text-anchor="middle" font-size="19" font-weight="900" font-family="Montserrat,sans-serif" fill="white" opacity="0.97">${lc.toFixed(0)}%</text>
+  <text x="90" y="91" text-anchor="middle" font-size="7.5" font-family="DM Sans,sans-serif" fill="white" opacity="0.8" letter-spacing="1">healthy</text>
   `;
 
   const s=dmgPct<3?'Healthy':dmgPct<10?'Slightly affected':dmgPct<22?'Mildly damaged':dmgPct<35?'Moderately damaged':'Heavily damaged';
@@ -742,7 +766,7 @@ function toggleQuit(){
 }
 
 function switchTab(name){
-  const names=['log','health','money','settings','history'];
+  const names=['log','health','money','history','settings'];
   document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',names[i]===name));
   document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));
   document.getElementById('tab-'+name).classList.add('active');
