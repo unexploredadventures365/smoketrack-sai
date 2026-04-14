@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SmokeTrack India</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800;900&family=Syne:wght@600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+[data-theme="dark"]{--bg:#0d0d0f;--surface:#16161a;--surface2:#1e1e24;--surface3:#252530;--border:rgba(255,255,255,0.09);--border2:rgba(255,255,255,0.2);--text:#f0eee8;--muted:#888;--muted2:#444;--modal-bg:rgba(0,0,0,0.75);}
+[data-theme="light"]{--bg:#f2f0ec;--surface:#ffffff;--surface2:#f0eeea;--surface3:#e5e3de;--border:rgba(0,0,0,0.09);--border2:rgba(0,0,0,0.2);--text:#181818;--muted:#888;--muted2:#ccc;--modal-bg:rgba(0,0,0,0.45);}
+:root{--accent:#ff5a1f;--accent2:#ffb347;--healthy:#22c55e;--warn:#f59e0b;--danger:#ef4444;--font-num:'Montserrat',sans-serif;--font-head:'Syne',sans-serif;--font-body:'DM Sans',sans-serif;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:var(--font-body);min-height:100vh;transition:background .3s,color .3s;}
+.theme-toggle{background:var(--surface2);border:1px solid var(--border);border-radius:30px;padding:4px;cursor:pointer;display:inline-flex;align-items:center;gap:2px;font-size:0.75rem;}
+.theme-toggle span{padding:3px 10px;border-radius:20px;transition:all .2s;color:var(--muted);}
+.theme-toggle span.on{background:var(--accent);color:#fff;font-weight:600;}
+#onboarding{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:2rem;position:relative;}
+#ob-theme-wrap{position:absolute;top:1.2rem;right:1.5rem;}
+.ob-card{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:2.4rem;max-width:520px;width:100%;}
+.ob-logo{font-family:var(--font-head);font-size:1.9rem;font-weight:700;color:var(--accent);margin-bottom:.35rem;}
+.ob-sub{color:var(--muted);font-size:.86rem;margin-bottom:1.8rem;}
+.ob-step{display:none;}.ob-step.active{display:block;}
+.ob-step h2{font-family:var(--font-head);font-size:1.2rem;font-weight:700;margin-bottom:1.3rem;}
+.ob-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:1rem;}
+.ob-option{background:var(--surface2);border:1.5px solid var(--border);border-radius:12px;padding:.8rem 1rem;cursor:pointer;text-align:center;font-size:.82rem;transition:all .18s;color:var(--text);}
+.ob-option:hover,.ob-option.selected{border-color:var(--accent);color:var(--accent);background:rgba(255,90,31,.09);}
+.ob-input{width:100%;background:var(--surface2);border:1.5px solid var(--border);border-radius:12px;padding:.72rem 1rem;color:var(--text);font-family:var(--font-body);font-size:.92rem;margin-bottom:10px;}
+.ob-input:focus{outline:none;border-color:var(--accent);}
+.ob-btn{width:100%;background:var(--accent);color:#fff;border:none;border-radius:12px;padding:.82rem;font-family:var(--font-head);font-size:.95rem;font-weight:700;cursor:pointer;transition:opacity .2s;margin-top:.85rem;}
+.ob-btn:hover{opacity:.85;}
+label.ob-label{font-size:.76rem;color:var(--muted);display:block;margin-bottom:3px;margin-top:9px;}
+#app{display:none;max-width:920px;margin:0 auto;padding:1.4rem;}
+.app-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.6rem;border-bottom:1px solid var(--border);padding-bottom:.9rem;gap:8px;flex-wrap:wrap;}
+.app-logo{font-family:var(--font-head);font-size:1.45rem;font-weight:700;color:var(--accent);}
+.header-right{display:flex;gap:7px;align-items:center;flex-wrap:wrap;}
+.streak-badge{background:rgba(255,179,71,.15);color:var(--accent2);border:1px solid rgba(255,179,71,.3);border-radius:20px;padding:3px 12px;font-size:.76rem;font-weight:600;}
+.stats-row{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-bottom:1.4rem;}
+@media(max-width:700px){.stats-row{grid-template-columns:repeat(4,1fr);}}
+@media(max-width:420px){.stats-row{grid-template-columns:repeat(3,1fr);}}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:.55rem .6rem;}
+.stat-label{font-size:.58rem;color:var(--muted);text-transform:uppercase;letter-spacing:.3px;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.stat-val{font-family:var(--font-num);font-size:1.15rem;font-weight:800;line-height:1;letter-spacing:-.5px;}
+.stat-sub{font-size:.58rem;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.stat-card.money .stat-val{color:var(--accent2);}
+.stat-card.cigs .stat-val{color:var(--accent);}
+.stat-card.saved .stat-val{color:var(--healthy);}
+.stat-card.daily .stat-val{color:#f472b6;}
+.stat-card.monthly .stat-val{color:#fb923c;}
+.section-title{font-family:var(--font-head);font-size:.82rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:.85rem;}
+.brand-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(138px,1fr));gap:7px;margin-bottom:1.6rem;}
+.brand-btn{background:var(--surface);border:1.5px solid var(--border);border-radius:12px;padding:10px 8px;cursor:pointer;text-align:center;transition:all .13s;color:var(--text);user-select:none;}
+.brand-btn:hover{border-color:var(--accent);transform:translateY(-1px);}
+.brand-btn:active{transform:scale(.97);}
+.brand-btn .bname{font-size:.76rem;font-weight:500;margin-bottom:2px;line-height:1.3;}
+.brand-btn .bprice{font-size:.67rem;color:var(--muted);}
+.brand-btn .bcount{font-family:var(--font-num);font-size:1.4rem;font-weight:900;color:var(--accent);letter-spacing:-1px;margin-top:3px;}
+.brand-btn.logged{border-color:var(--accent);background:rgba(255,90,31,.07);}
+.brand-btn.other-btn{border-style:dashed;}
+.brand-btn.other-btn .bcount{color:var(--muted);font-size:1.6rem;}
+.tab-bar{display:flex;gap:3px;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:4px;margin-bottom:1.6rem;}
+.tab{flex:1;text-align:center;padding:7px 3px;border-radius:8px;cursor:pointer;font-size:.77rem;color:var(--muted);transition:all .2s;white-space:nowrap;}
+.tab.active{background:var(--accent);color:#fff;font-weight:600;}
+.tab-content{display:none;}.tab-content.active{display:block;}
+.single-row{display:flex;align-items:center;gap:8px;background:rgba(255,90,31,.06);border:1px solid rgba(255,90,31,.22);border-radius:10px;padding:8px 12px;margin-bottom:.8rem;flex-wrap:wrap;font-size:.8rem;}
+.stog-wrap{display:flex;gap:5px;}
+.stog-btn{background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:4px 10px;cursor:pointer;font-size:.76rem;color:var(--muted);transition:all .15s;}
+.stog-btn.on{background:rgba(255,90,31,.15);border-color:var(--accent);color:var(--accent);font-weight:600;}
+.single-row .s-label{color:var(--muted);white-space:nowrap;}
+.single-custom{background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:4px 8px;color:var(--text);font-size:.83rem;width:75px;}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:13px;margin-bottom:1.6rem;}
+@media(max-width:600px){.two-col{grid-template-columns:1fr;}}
+.meter-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.05rem;}
+.meter-row{margin-bottom:10px;}
+.meter-label{display:flex;justify-content:space-between;font-size:.74rem;margin-bottom:4px;}
+.meter-label span:last-child{color:var(--muted);}
+.meter-bar{background:var(--surface2);border-radius:99px;height:7px;overflow:hidden;}
+.meter-fill{height:100%;border-radius:99px;transition:width .7s ease;}
+.fill-tar{background:linear-gradient(90deg,#f59e0b,#92400e);}
+.fill-co{background:linear-gradient(90deg,#ef4444,#7f1d1d);}
+.fill-nic{background:#a855f7;}
+.fill-carc{background:linear-gradient(90deg,#ec4899,#831843);}
+.lung-wrap{display:flex;justify-content:center;align-items:center;padding:.7rem 0;position:relative;}
+.lung-label{position:absolute;bottom:2px;font-size:.72rem;color:var(--muted);text-align:center;width:100%;}
+.fd-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.25rem;margin-bottom:1.6rem;}
+.fd-row{display:flex;gap:13px;flex-wrap:wrap;margin-bottom:.9rem;}
+.fd-row label{font-size:.76rem;color:var(--muted);display:flex;flex-direction:column;gap:4px;flex:1;min-width:105px;}
+.fd-input{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:6px 10px;color:var(--text);font-size:.86rem;}
+.fd-input:focus{outline:none;border-color:var(--accent);}
+.fd-result{display:grid;grid-template-columns:1fr 1fr 1fr;gap:9px;}
+.fd-cell{text-align:center;}
+.fd-cell .val{font-family:var(--font-num);font-size:1.1rem;font-weight:800;color:#60a5fa;letter-spacing:-.5px;}
+.fd-cell .lbl{font-size:.67rem;color:var(--muted);margin-top:2px;}
+.fd-insight{margin-top:.9rem;background:rgba(96,165,250,.06);border:1px solid rgba(96,165,250,.18);border-radius:10px;padding:.85rem;font-size:.78rem;color:#93c5fd;line-height:1.6;}
+.log-table{width:100%;border-collapse:collapse;font-size:.78rem;}
+.log-table th{text-align:left;color:var(--muted);padding:5px 9px;border-bottom:1px solid var(--border);font-weight:500;}
+.log-table td{padding:6px 9px;border-bottom:1px solid var(--border);}
+.recovery-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.25rem;margin-bottom:1.6rem;}
+.milestone{display:flex;align-items:center;gap:9px;padding:6px 0;border-bottom:1px solid var(--border);}
+.ms-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
+.ms-done{background:var(--healthy);}.ms-pending{background:var(--muted2);}
+.ms-text{font-size:.81rem;}.ms-time{font-size:.7rem;color:var(--muted);margin-left:auto;white-space:nowrap;}
+.settings-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.25rem;margin-bottom:1.4rem;}
+.settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:11px;}
+@media(max-width:500px){.settings-grid{grid-template-columns:1fr;}}
+.setting-row{display:flex;flex-direction:column;gap:4px;}
+.setting-row label{font-size:.74rem;color:var(--muted);}
+.setting-row input,.setting-row select{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:6px 10px;color:var(--text);font-size:.86rem;}
+.apply-btn{background:var(--accent);color:#fff;border:none;border-radius:8px;padding:7px 18px;font-family:var(--font-head);font-weight:700;font-size:.83rem;cursor:pointer;margin-top:.5rem;}
+.apply-btn:hover{opacity:.85;}
+.modal-overlay{position:fixed;inset:0;background:var(--modal-bg);z-index:500;display:none;align-items:center;justify-content:center;padding:1rem;}
+.modal-overlay.open{display:flex;}
+.modal-box{background:var(--surface);border:1px solid var(--border2);border-radius:18px;padding:1.5rem;width:100%;max-width:480px;max-height:88vh;overflow-y:auto;}
+.modal-box h3{font-family:var(--font-head);font-size:1.05rem;font-weight:700;margin-bottom:.9rem;}
+.brand-picker-grid{display:grid;grid-template-columns:1fr 1fr;gap:5px;max-height:290px;overflow-y:auto;margin-bottom:.9rem;}
+.bp-item{background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:7px 9px;cursor:pointer;font-size:.76rem;transition:all .14s;color:var(--text);}
+.bp-item:hover{border-color:var(--accent);color:var(--accent);}
+.bp-name{font-weight:600;}.bp-pr{color:var(--muted);font-size:.67rem;margin-top:1px;}
+.modal-divider{border:none;border-top:1px solid var(--border);margin:.9rem 0;}
+.modal-footer{display:flex;gap:7px;justify-content:flex-end;}
+.btn-ghost{background:transparent;border:1px solid var(--border2);border-radius:8px;padding:6px 14px;color:var(--muted);cursor:pointer;font-size:.8rem;}
+.quit-btn{background:var(--healthy);color:#fff;border:none;border-radius:10px;padding:6px 14px;cursor:pointer;font-size:.78rem;font-family:var(--font-head);font-weight:700;}
+.quit-btn.quit-active{background:var(--danger);}
+.disclaimer{display:flex;gap:9px;align-items:flex-start;background:rgba(245,158,11,.07);border:1px solid rgba(245,158,11,.25);border-radius:10px;padding:9px 12px;margin-bottom:1.3rem;font-size:.72rem;color:var(--muted);line-height:1.5;}
+.disclaimer .disc-icon{font-size:.9rem;flex-shrink:0;margin-top:1px;}
+.disclaimer strong{color:var(--warn);font-weight:600;}
+.stat-card.missed .stat-val{color:#a78bfa;}
+.ob-disclaimer{background:rgba(245,158,11,.07);border:1px solid rgba(245,158,11,.2);border-radius:10px;padding:9px 12px;font-size:.71rem;color:var(--muted);line-height:1.5;margin-top:1rem;}
+.ob-disclaimer strong{color:var(--warn);font-weight:600;}
+#toast{position:fixed;bottom:26px;left:50%;transform:translateX(-50%);background:var(--accent);color:#fff;padding:8px 20px;border-radius:30px;font-size:.81rem;opacity:0;transition:opacity .3s;pointer-events:none;z-index:1000;font-family:var(--font-head);font-weight:700;white-space:nowrap;}
+#toast.show{opacity:1;}
+select option{background:var(--surface2);color:var(--text);}
+</style>
+</head>
+<body>
+
+<div id="onboarding">
+  <div id="ob-theme-wrap">
+    <div class="theme-toggle" onclick="toggleTheme()">
+      <span id="tl-dark" class="on">🌙 Dark</span>
+      <span id="tl-light">☀️ Light</span>
+    </div>
+  </div>
+  <div class="ob-card">
+    <div class="ob-logo">SmokeTrack</div>
+    <div class="ob-sub">Your honest smoking dashboard — India Edition</div>
+
+    <div class="ob-step active" id="step1">
+      <h2>How long have you been smoking?</h2>
+      <div class="ob-grid">
+        <div class="ob-option" onclick="selectOpt(this,0.5)">Less than 1 yr</div>
+        <div class="ob-option" onclick="selectOpt(this,2)">1–3 years</div>
+        <div class="ob-option" onclick="selectOpt(this,4)">3–5 years</div>
+        <div class="ob-option" onclick="selectOpt(this,7.5)">5–10 years</div>
+        <div class="ob-option" onclick="selectOpt(this,15)">10–20 years</div>
+        <div class="ob-option" onclick="selectOpt(this,22)">20+ years</div>
+      </div>
+      <label class="ob-label">Or type exact years (overrides above)</label>
+      <input class="ob-input" type="number" id="ob-years-exact" placeholder="e.g. 20" min="0" max="60" step="0.5">
+      <button class="ob-btn" onclick="goStep(2)">Next →</button>
+    </div>
+
+    <div class="ob-step" id="step2">
+      <h2>Your daily habit</h2>
+      <label class="ob-label">Average cigarettes per day</label>
+      <input class="ob-input" type="number" id="perday" min="1" max="100" value="10">
+      <label class="ob-label">When did you last smoke?</label>
+      <input class="ob-input" type="datetime-local" id="lastsmoke">
+      <button class="ob-btn" onclick="goStep(3)">Next →</button>
+    </div>
+
+    <div class="ob-step" id="step3">
+      <h2>Pick your usual brand(s)</h2>
+      <div id="ob-brand-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:6px;max-height:300px;overflow-y:auto;margin-bottom:1rem;"></div>
+      <div class="ob-disclaimer"><strong>⚠ Important notice:</strong> All health data shown in this app — toxin levels, lung capacity estimates, and recovery timelines — are <strong>indicative only</strong>, based on published research averages. They do not represent your personal medical condition. Please consult a <strong>pulmonologist</strong> or qualified healthcare provider for an accurate assessment of your lung health.</div>
+      <button class="ob-btn" onclick="finishOnboarding()">I understand — Start Tracking →</button>
+    </div>
+  </div>
+</div>
+
+<div id="app">
+  <div class="app-header">
+    <div class="app-logo">SmokeTrack</div>
+    <div class="header-right">
+      <span class="streak-badge" id="streak-badge">Tracking</span>
+      <button class="quit-btn" id="quit-btn" onclick="toggleQuit()">I Quit Today</button>
+      <div class="theme-toggle" onclick="toggleTheme()">
+        <span id="tl-dark2" class="on">🌙</span>
+        <span id="tl-light2">☀️</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat-card cigs"><div class="stat-label">Today</div><div class="stat-val" id="stat-today">0</div><div class="stat-sub">cigs</div></div>
+    <div class="stat-card cigs"><div class="stat-label">All time</div><div class="stat-val" id="stat-total">0</div><div class="stat-sub">smoked</div></div>
+    <div class="stat-card daily"><div class="stat-label">Daily spend</div><div class="stat-val" id="stat-daily">₹0</div><div class="stat-sub">avg/day</div></div>
+    <div class="stat-card monthly"><div class="stat-label">Monthly</div><div class="stat-val" id="stat-monthly">₹0</div><div class="stat-sub">avg/month</div></div>
+    <div class="stat-card money"><div class="stat-label">Total spent</div><div class="stat-val" id="stat-spent">₹0</div><div class="stat-sub">on cigs</div></div>
+    <div class="stat-card missed"><div class="stat-label">If invested</div><div class="stat-val" id="stat-missed">₹0</div><div class="stat-sub">@6.5% 5yr</div></div>
+    <div class="stat-card saved"><div class="stat-label">Saved</div><div class="stat-val" id="stat-saved">₹0</div><div class="stat-sub">since quit</div></div>
+  </div>
+
+  <div class="tab-bar">
+    <div class="tab active" onclick="switchTab('log')">Log</div>
+    <div class="tab" onclick="switchTab('health')">Body</div>
+    <div class="tab" onclick="switchTab('money')">Money</div>
+    <div class="tab" onclick="switchTab('settings')">Settings</div>
+    <div class="tab" onclick="switchTab('history')">History</div>
+  </div>
+
+  <div class="tab-content active" id="tab-log">
+    <div class="single-row">
+      <span class="s-label">Buying as:</span>
+      <div class="stog-wrap">
+        <div class="stog-btn on" id="btn-pack" onclick="setSingleMode(false)">Pack</div>
+        <div class="stog-btn" id="btn-single" onclick="setSingleMode(true)">Single piece (+20%)</div>
+      </div>
+      <span class="s-label" style="margin-left:6px;">Custom single ₹</span>
+      <input class="single-custom" type="number" id="custom-single-price" placeholder="auto" min="1">
+    </div>
+    <div class="section-title">Tap to log a cigarette</div>
+    <div class="brand-grid" id="brand-grid"></div>
+    <div class="disclaimer"><span class="disc-icon">⚠️</span><span><strong>For awareness only.</strong> Prices shown are indicative market averages and may vary by city and retailer. All health and financial impact data shown elsewhere in this app is based on published research and is not a clinical or financial assessment.</span></div>
+  </div>
+
+  <div class="tab-content" id="tab-health">
+    <div class="two-col">
+      <div class="meter-card">
+        <div class="section-title">Toxin accumulation</div>
+        <div class="meter-row"><div class="meter-label"><span>Tar</span><span id="tar-pct">0%</span></div><div class="meter-bar"><div class="meter-fill fill-tar" id="bar-tar" style="width:0%"></div></div></div>
+        <div class="meter-row"><div class="meter-label"><span>Carbon Monoxide (CO)</span><span id="co-pct">0%</span></div><div class="meter-bar"><div class="meter-fill fill-co" id="bar-co" style="width:0%"></div></div></div>
+        <div class="meter-row"><div class="meter-label"><span>Nicotine dependence</span><span id="nic-pct">0%</span></div><div class="meter-bar"><div class="meter-fill fill-nic" id="bar-nic" style="width:0%"></div></div></div>
+        <div class="meter-row"><div class="meter-label"><span>Carcinogen load</span><span id="carc-pct">0%</span></div><div class="meter-bar"><div class="meter-fill fill-carc" id="bar-carc" style="width:0%"></div></div></div>
+        <div style="margin-top:.75rem;font-size:.7rem;color:var(--muted);line-height:1.5;">CO clears in 2–3 days after quitting. Tar and carcinogens take weeks to months. Nicotine cravings ease within 2 weeks.</div>
+      </div>
+      <div class="meter-card">
+        <div class="section-title">Lung health</div>
+        <div class="lung-wrap"><svg id="lung-svg" width="180" height="210" viewBox="0 0 180 210"></svg><div class="lung-label" id="lung-status">—</div></div>
+        <div class="meter-row" style="margin-top:.4rem;"><div class="meter-label"><span>Lung capacity</span><span id="lung-pct">—</span></div><div class="meter-bar"><div class="meter-fill" id="bar-lung" style="width:100%;background:var(--healthy)"></div></div></div>
+      </div>
+    </div>
+    <div class="recovery-card">
+      <div class="section-title">Recovery milestones after quitting</div>
+      <div id="milestones"></div>
+      <div style="margin-top:.7rem;font-size:.7rem;color:var(--muted);">Use the "I Quit Today" button above to track your progress.</div>
+    </div>
+    <div class="disclaimer"><span class="disc-icon">⚠️</span><span><strong>Indicative data only.</strong> Toxin levels and lung capacity are model estimates based on published pack-years research — not a clinical measurement. Recovery milestones are drawn from population-level studies (WHO, NHS, CDC). Individual results vary significantly. Only a <strong>pulmonologist</strong> using spirometry can measure your actual lung function. Please consult a qualified healthcare professional.</span></div>
+  </div>
+
+  <div class="tab-content" id="tab-money">
+    <div class="fd-card">
+      <div class="section-title">What if you'd invested instead?</div>
+      <div class="fd-row">
+        <label>Interest rate (% p.a.)<input class="fd-input" type="number" id="fd-rate" value="6.5" step="0.1" min="1" max="25" oninput="calcFD()"></label>
+        <label>Projection period
+          <select class="fd-input" id="fd-dur" onchange="calcFD()">
+            <option value="1">1 year</option><option value="3">3 years</option><option value="5" selected>5 years</option><option value="10">10 years</option><option value="20">20 years</option><option value="30">30 years</option>
+          </select>
+        </label>
+      </div>
+      <div class="fd-result">
+        <div class="fd-cell"><div class="val" id="fd-invested">₹0</div><div class="lbl">Spent on cigs</div></div>
+        <div class="fd-cell"><div class="val" id="fd-value">₹0</div><div class="lbl">FD value</div></div>
+        <div class="fd-cell"><div class="val" id="fd-gain">₹0</div><div class="lbl">Interest earned</div></div>
+      </div>
+      <div class="fd-insight" id="fd-insight"></div>
+    </div>
+    <div class="meter-card"><div class="section-title">Spend by brand</div><div id="brand-spend"></div></div>
+    <div class="disclaimer"><span class="disc-icon">⚠️</span><span><strong>Illustrative only.</strong> Financial projections assume simple annual compounding and are for awareness only — not financial advice. Actual FD rates, returns, and tax implications vary. Consult a certified financial advisor before making investment decisions.</span></div>
+  </div>
+
+  <div class="tab-content" id="tab-settings">
+    <div class="settings-card">
+      <div class="section-title">Update your profile</div>
+      <div class="settings-grid">
+        <div class="setting-row"><label>Years smoking</label><input type="number" id="set-years" min="0" max="60" step="0.5"></div>
+        <div class="setting-row"><label>Cigarettes per day</label><input type="number" id="set-perday" min="1" max="100"></div>
+      </div>
+      <div style="font-size:.72rem;color:var(--muted);margin-top:.6rem;">Changing these will recalculate your historical totals, toxin levels and lung health.</div>
+      <button class="apply-btn" onclick="applySettings()">Apply Changes</button>
+    </div>
+    <div class="settings-card">
+      <div class="section-title">Your brands</div>
+      <div id="brand-manage" style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:.9rem;"></div>
+      <button class="apply-btn" onclick="openBrandModal('manage')">+ Add a Brand</button>
+    </div>
+    <div class="disclaimer"><span class="disc-icon">⚠️</span><span><strong>Estimates only.</strong> Changing years smoked or cigarettes per day recalculates historical totals using averages. These are approximations and not a substitute for medical records or professional health advice.</span></div>
+  </div>
+
+  <div class="tab-content" id="tab-history">
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1rem;overflow-x:auto;">
+      <table class="log-table">
+        <thead><tr><th>Time</th><th>Brand</th><th>Type</th><th>Per cig</th><th>Running total</th></tr></thead>
+        <tbody id="log-body"></tbody>
+      </table>
+      <div id="log-empty" style="text-align:center;color:var(--muted);padding:1.8rem;font-size:.81rem;">No cigarettes logged yet — tap a brand in the Log tab.</div>
+    </div>
+    <div class="disclaimer"><span class="disc-icon">⚠️</span><span><strong>Self-reported data.</strong> This log is based on entries you make manually. Accuracy depends on consistent logging. The running totals are estimates and should not be used as official records.</span></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="brand-modal">
+  <div class="modal-box">
+    <h3>Choose a brand</h3>
+    <div class="brand-picker-grid" id="modal-brand-grid"></div>
+    <hr class="modal-divider">
+    <div style="font-size:.78rem;color:var(--muted);margin-bottom:7px;">Add custom brand</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:.9rem;">
+      <input class="ob-input" style="margin:0;" type="text" id="custom-name" placeholder="Brand name">
+      <input class="ob-input" style="margin:0;" type="number" id="custom-price" placeholder="₹ per pack">
+    </div>
+    <div class="modal-footer">
+      <button class="btn-ghost" onclick="closeBrandModal()">Cancel</button>
+      <button class="ob-btn" style="width:auto;margin:0;padding:7px 18px;" onclick="addCustomBrand()">Add Custom</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+const BRANDS=[
+  {name:"Gold Flake Kings",price:250,tar:12,co:14,nic:0.9},
+  {name:"Gold Flake Premium",price:220,tar:10,co:12,nic:0.8},
+  {name:"Gold Flake Lights",price:220,tar:7,co:9,nic:0.6},
+  {name:"Wills Classic",price:270,tar:11,co:13,nic:0.85},
+  {name:"Wills Navy Cut",price:270,tar:9,co:11,nic:0.75},
+  {name:"Four Square",price:160,tar:14,co:16,nic:1.0},
+  {name:"Bristol",price:150,tar:15,co:17,nic:1.1},
+  {name:"Scissors",price:120,tar:16,co:18,nic:1.2},
+  {name:"Charms",price:130,tar:15,co:16,nic:1.0},
+  {name:"Classic Milds",price:250,tar:8,co:10,nic:0.7},
+  {name:"Marlboro Red",price:400,tar:10,co:12,nic:0.9},
+  {name:"Marlboro Gold",price:400,tar:7,co:9,nic:0.6},
+  {name:"Dunhill",price:450,tar:8,co:10,nic:0.65},
+  {name:"555",price:380,tar:11,co:13,nic:0.85},
+  {name:"Lucky Strike",price:380,tar:10,co:12,nic:0.8},
+  {name:"Camel",price:350,tar:9,co:11,nic:0.75},
+  {name:"Red & White",price:130,tar:16,co:18,nic:1.2},
+  {name:"Benson & Hedges",price:430,tar:9,co:11,nic:0.75},
+  {name:"Panama",price:150,tar:15,co:17,nic:1.1},
+  {name:"Capstan",price:140,tar:16,co:18,nic:1.2},
+];
+
+let state={yearsSmoked:1,perDay:10,lastSmoke:null,favBrands:[],log:[],totalCigs:0,totalSpent:0,quitDate:null,baselinePerDay:10,singleMode:false};
+let obData={yearsSmoked:1,brands:[]};
+let modalMode='log';
+
+function toggleTheme(){
+  const html=document.documentElement;
+  const isDark=html.getAttribute('data-theme')==='dark';
+  html.setAttribute('data-theme',isDark?'light':'dark');
+  ['tl-dark','tl-dark2'].forEach(id=>{const el=document.getElementById(id);if(el)el.classList.toggle('on',!isDark);});
+  ['tl-light','tl-light2'].forEach(id=>{const el=document.getElementById(id);if(el)el.classList.toggle('on',isDark);});
+}
+
+function selectOpt(el,years){
+  el.parentElement.querySelectorAll('.ob-option').forEach(o=>o.classList.remove('selected'));
+  el.classList.add('selected');
+  obData.yearsSmoked=years;
+}
+
+function goStep(n){
+  document.querySelectorAll('.ob-step').forEach(s=>s.classList.remove('active'));
+  document.getElementById('step'+n).classList.add('active');
+  if(n===3)renderObBrands();
+}
+
+function renderObBrands(){
+  const g=document.getElementById('ob-brand-grid');g.innerHTML='';
+  BRANDS.forEach((b,i)=>{
+    const d=document.createElement('div');d.className='ob-option';d.style.fontSize='.76rem';
+    d.innerHTML='<strong>'+b.name+'</strong><br><span style="color:var(--muted)">₹'+b.price+'/pack</span>';
+    d.onclick=()=>{d.classList.toggle('selected');const idx=obData.brands.indexOf(i);if(idx===-1)obData.brands.push(i);else obData.brands.splice(idx,1);};
+    g.appendChild(d);
+  });
+}
+
+function finishOnboarding(){
+  const exactYears=parseFloat(document.getElementById('ob-years-exact').value);
+  const years=(!isNaN(exactYears)&&exactYears>0)?exactYears:obData.yearsSmoked;
+  const pd=parseInt(document.getElementById('perday').value)||10;
+  const ls=document.getElementById('lastsmoke').value;
+  state.yearsSmoked=years;state.perDay=pd;state.baselinePerDay=pd;
+  state.lastSmoke=ls?new Date(ls):new Date(Date.now()-3600000);
+  state.favBrands=obData.brands.length>0?[...obData.brands]:[0,1];
+  recalcHistorical();
+  document.getElementById('onboarding').style.display='none';
+  document.getElementById('app').style.display='block';
+  renderAll();
+}
+
+function recalcHistorical(){
+  const days=Math.round(state.yearsSmoked*365);
+  state.totalCigs=Math.round(days*state.perDay);
+  state.totalSpent=Math.round(state.totalCigs/20*avgPackPrice());
+}
+
+function avgPackPrice(){
+  if(!state.favBrands.length)return 250;
+  return state.favBrands.reduce((a,i)=>a+(BRANDS[i]?BRANDS[i].price:250),0)/state.favBrands.length;
+}
+
+function setSingleMode(val){
+  state.singleMode=val;
+  document.getElementById('btn-pack').classList.toggle('on',!val);
+  document.getElementById('btn-single').classList.toggle('on',val);
+}
+
+function logCig(brandIdx){
+  const b=BRANDS[brandIdx];if(!b)return;
+  const custom=parseFloat(document.getElementById('custom-single-price').value);
+  let perCig=b.price/20;
+  if(state.singleMode)perCig=(!isNaN(custom)&&custom>0)?custom:(b.price/20)*1.2;
+  const entry={time:new Date(),brand:brandIdx,price:perCig,single:state.singleMode};
+  state.log.push(entry);state.totalCigs++;state.totalSpent+=perCig;
+  showToast('+1 '+b.name);
+  renderAll();
+}
+
+function isToday(d){const n=new Date();return d.getDate()===n.getDate()&&d.getMonth()===n.getMonth()&&d.getFullYear()===n.getFullYear();}
+
+function renderBrandGrid(){
+  const g=document.getElementById('brand-grid');g.innerHTML='';
+  state.favBrands.forEach(i=>{
+    const b=BRANDS[i];if(!b)return;
+    const count=state.log.filter(l=>l.brand===i&&isToday(l.time)).length;
+    const d=document.createElement('div');
+    d.className='brand-btn'+(count>0?' logged':'');
+    d.innerHTML='<div class="bname">'+b.name+'</div><div class="bprice">₹'+b.price+'/pack</div><div class="bcount">'+(count||'0')+'</div>';
+    d.addEventListener('click',()=>logCig(i));
+    g.appendChild(d);
+  });
+  const more=document.createElement('div');
+  more.className='brand-btn other-btn';
+  more.innerHTML='<div class="bname" style="color:var(--muted)">Other brand</div><div class="bprice">tap to pick</div><div class="bcount">+</div>';
+  more.addEventListener('click',()=>openBrandModal('log'));
+  g.appendChild(more);
+}
+
+function openBrandModal(mode){
+  modalMode=mode||'log';
+  const g=document.getElementById('modal-brand-grid');g.innerHTML='';
+  BRANDS.forEach((b,i)=>{
+    const d=document.createElement('div');d.className='bp-item';
+    d.innerHTML='<div class="bp-name">'+b.name+'</div><div class="bp-pr">₹'+b.price+'/pack · tar '+b.tar+'mg</div>';
+    d.addEventListener('click',()=>{
+      if(!state.favBrands.includes(i))state.favBrands.push(i);
+      closeBrandModal();
+      if(modalMode==='log'){logCig(i);}
+      else{renderAll();}
+    });
+    g.appendChild(d);
+  });
+  document.getElementById('brand-modal').classList.add('open');
+}
+function closeBrandModal(){document.getElementById('brand-modal').classList.remove('open');}
+function addCustomBrand(){
+  const name=document.getElementById('custom-name').value.trim();
+  const price=parseFloat(document.getElementById('custom-price').value);
+  if(!name||isNaN(price)||price<=0){showToast('Enter name & price');return;}
+  BRANDS.push({name,price,tar:12,co:14,nic:0.9});
+  const idx=BRANDS.length-1;
+  state.favBrands.push(idx);
+  closeBrandModal();
+  if(modalMode==='log')logCig(idx);
+  renderAll();showToast(name+' added!');
+}
+document.getElementById('brand-modal').addEventListener('click',e=>{if(e.target===document.getElementById('brand-modal'))closeBrandModal();});
+
+// ── ACCUMULATION MODEL (pack-years based) ──
+function getAccumulation(){
+  const avgTar=state.favBrands.length?state.favBrands.reduce((a,i)=>a+(BRANDS[i]?BRANDS[i].tar:12),0)/state.favBrands.length:12;
+  const avgCO=state.favBrands.length?state.favBrands.reduce((a,i)=>a+(BRANDS[i]?BRANDS[i].co:14),0)/state.favBrands.length:14;
+  const avgNic=state.favBrands.length?state.favBrands.reduce((a,i)=>a+(BRANDS[i]?BRANDS[i].nic:0.9),0)/state.favBrands.length:0.9;
+  // Pack-years = (cigs/day / 20) * years  — core medical metric
+  const packYears=(state.perDay/20)*state.yearsSmoked;
+  // Scale: 1 pack/day for 40 years = 40 pack-years = 100% on meters
+  const base=40;
+  let tar=Math.min(100,(packYears/base)*100*(avgTar/12));
+  let co=Math.min(100,(packYears/base)*100*(avgCO/14));
+  let nic=Math.min(100,(packYears/(base*0.75))*100*(avgNic/0.9));
+  let carc=Math.min(100,(packYears/base)*100);
+  if(state.quitDate){
+    const d=(new Date()-state.quitDate)/86400000;
+    co*=Math.pow(0.5,d*4);         // CO half-life ~6hrs
+    nic*=Math.pow(0.5,d*1.5);      // Nic clears in ~3 days
+    tar*=Math.pow(0.97,d/30);      // tar: ~3% per month
+    carc*=Math.pow(0.985,d/30);    // carcinogens: ~1.5% per month
+  }
+  return{tar,co,nic,carc,packYears};
+}
+
+function getLungCapacity(packYears){
+  // Medical: ~1% FEV1 loss per pack-year, max ~45% total reduction realistically
+  // 10/day × 20yr = 10 pack-years → 10% reduction → 90% capacity (visible impact)
+  let reduction=Math.min(45,packYears*1.1);
+  if(state.quitDate){
+    const d=(new Date()-state.quitDate)/86400000;
+    // Partial recovery: ~0.5% per month, up to 20% of lost capacity
+    const maxRegain=reduction*0.2;
+    reduction=Math.max(0,reduction-Math.min(maxRegain,d/30*0.5));
+  }
+  return Math.max(55,100-reduction);
+}
+
+function updateStats(){
+  document.getElementById('stat-today').textContent=state.log.filter(l=>isToday(l.time)).length;
+  document.getElementById('stat-total').textContent=state.totalCigs.toLocaleString('en-IN');
+  document.getElementById('stat-spent').textContent='₹'+Math.round(state.totalSpent).toLocaleString('en-IN');
+  // Daily and monthly averages based on perDay and avg pack price
+  const dailySpend=Math.round((state.perDay/20)*avgPackPrice());
+  const monthlySpend=Math.round(dailySpend*30.4);
+  document.getElementById('stat-daily').textContent='₹'+dailySpend.toLocaleString('en-IN');
+  document.getElementById('stat-monthly').textContent='₹'+monthlySpend.toLocaleString('en-IN');
+  let saved=0;
+  if(state.quitDate){const d=Math.max(0,(new Date()-state.quitDate)/86400000);saved=Math.round(d*(state.baselinePerDay/20)*avgPackPrice());}
+  document.getElementById('stat-saved').textContent='₹'+saved.toLocaleString('en-IN');
+  if(state.quitDate){
+    const d=Math.floor((new Date()-state.quitDate)/86400000);
+    document.getElementById('streak-badge').textContent=d===0?'Quit today!':d+'d smoke-free';
+    document.getElementById('quit-btn').textContent='Resume smoking';
+    document.getElementById('quit-btn').classList.add('quit-active');
+  } else {
+    document.getElementById('streak-badge').textContent=state.yearsSmoked+'yr smoker';
+    document.getElementById('quit-btn').textContent='I Quit Today';
+    document.getElementById('quit-btn').classList.remove('quit-active');
+  }
+}
+
+function updateMeters(){
+  const a=getAccumulation();
+  setBar('bar-tar','tar-pct',a.tar);setBar('bar-co','co-pct',a.co);
+  setBar('bar-nic','nic-pct',a.nic);setBar('bar-carc','carc-pct',a.carc);
+}
+function setBar(bId,pId,v){document.getElementById(bId).style.width=v.toFixed(1)+'%';document.getElementById(pId).textContent=v.toFixed(1)+'%';}
+
+function renderLung(){
+  const a=getAccumulation();
+  const lc=getLungCapacity(a.packYears);
+  const dmgPct=100-lc; // 0–45 realistically
+
+  // SVG viewBox is 0 0 180 210. Lung body spans y=22 to y=198 (height=176px)
+  // Damage fills from BOTTOM upward: damaged % of 176 = dmgPct/100 * 176
+  const lungTop=22, lungBottom=198, lungH=lungBottom-lungTop;
+  // The dividing y between green (top/healthy) and brown (bottom/damaged)
+  const splitY=lungBottom - (dmgPct/100)*lungH;
+
+  // Colour stops: healthy=bright green, damaged=dark brown/tar
+  const healthyFill='#22c55e';
+  // Brown gets darker the more damage there is
+  const brownR=Math.round(110+dmgPct*1.2);
+  const brownG=Math.round(50-dmgPct*0.5);
+  const brownB=10;
+  const damagedFill=`rgb(${Math.min(255,brownR)},${Math.max(5,brownG)},${brownB})`;
+
+  // Bronchi/airway colour
+  const airwayCol=dmgPct>30?'#7f3a1a':'#555';
+
+  // Tar spot overlays that appear progressively
+  let tarSpots='';
+  if(dmgPct>8){
+    const r1=Math.min(9,dmgPct/4.5);
+    tarSpots+=`<circle cx="52" cy="175" r="${r1}" fill="rgba(60,20,0,0.55)"/>`;
+    tarSpots+=`<circle cx="128" cy="170" r="${r1*0.85}" fill="rgba(60,20,0,0.5)"/>`;
+  }
+  if(dmgPct>18){
+    const r2=Math.min(10,dmgPct/4);
+    tarSpots+=`<circle cx="44" cy="155" r="${r2}" fill="rgba(50,15,0,0.5)"/>`;
+    tarSpots+=`<circle cx="136" cy="150" r="${r2*0.9}" fill="rgba(50,15,0,0.48)"/>`;
+    tarSpots+=`<circle cx="65" cy="185" r="${Math.min(7,dmgPct/5)}" fill="rgba(40,10,0,0.45)"/>`;
+    tarSpots+=`<circle cx="118" cy="180" r="${Math.min(6,dmgPct/5.5)}" fill="rgba(40,10,0,0.42)"/>`;
+  }
+  if(dmgPct>30){
+    const r3=Math.min(11,dmgPct/3.5);
+    tarSpots+=`<circle cx="40" cy="135" r="${r3}" fill="rgba(40,10,0,0.5)"/>`;
+    tarSpots+=`<circle cx="140" cy="130" r="${r3*0.85}" fill="rgba(40,10,0,0.48)"/>`;
+    tarSpots+=`<circle cx="58" cy="165" r="${Math.min(8,dmgPct/4)}" fill="rgba(30,8,0,0.45)"/>`;
+    tarSpots+=`<circle cx="122" cy="162" r="${Math.min(7,dmgPct/4.5)}" fill="rgba(30,8,0,0.42)"/>`;
+  }
+  if(dmgPct>40){
+    tarSpots+=`<circle cx="55" cy="120" r="${Math.min(9,dmgPct/4)}" fill="rgba(30,8,0,0.5)"/>`;
+    tarSpots+=`<circle cx="125" cy="115" r="${Math.min(8,dmgPct/4.5)}" fill="rgba(30,8,0,0.48)"/>`;
+  }
+
+  const lungPathL="M90,22 C68,22 48,38 43,58 C36,84 33,104 30,124 C26,148 23,163 26,178 C29,191 41,198 54,193 C67,188 74,172 77,157 C81,142 84,127 90,117";
+  const lungPathR="M90,22 C112,22 132,38 137,58 C144,84 147,104 150,124 C154,148 157,163 154,178 C151,191 139,198 126,193 C113,188 106,172 103,157 C99,142 96,127 90,117";
+
+  const svg=document.getElementById('lung-svg');
+  svg.innerHTML=`
+  <defs>
+    <!-- Clip to left lung shape -->
+    <clipPath id="clipL"><path d="${lungPathL}"/></clipPath>
+    <!-- Clip to right lung shape -->
+    <clipPath id="clipR"><path d="${lungPathR}"/></clipPath>
+  </defs>
+
+  <!-- LEFT LUNG -->
+  <g clip-path="url(#clipL)">
+    <!-- Full green base (healthy) -->
+    <rect x="0" y="${lungTop}" width="180" height="${lungH}" fill="${healthyFill}"/>
+    <!-- Brown damage overlay from bottom up -->
+    ${dmgPct>0?`<rect x="0" y="${splitY.toFixed(1)}" width="180" height="${(lungBottom-splitY+2).toFixed(1)}" fill="${damagedFill}"/>
+    <!-- Soft gradient at the split boundary -->
+    <rect x="0" y="${(splitY-8).toFixed(1)}" width="180" height="12" fill="url(#splitGrad)"/>`:``}
+    <!-- Tar spots clipped to lung -->
+    ${tarSpots}
+  </g>
+
+  <!-- RIGHT LUNG -->
+  <g clip-path="url(#clipR)">
+    <rect x="0" y="${lungTop}" width="180" height="${lungH}" fill="${healthyFill}"/>
+    ${dmgPct>0?`<rect x="0" y="${splitY.toFixed(1)}" width="180" height="${(lungBottom-splitY+2).toFixed(1)}" fill="${damagedFill}"/>
+    <rect x="0" y="${(splitY-8).toFixed(1)}" width="180" height="12" fill="url(#splitGrad)"/>`:``}
+    ${tarSpots}
+  </g>
+
+  <!-- Gradient at green/brown boundary for smooth blend -->
+  <defs>
+    <linearGradient id="splitGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="${healthyFill}" stop-opacity="1"/>
+      <stop offset="100%" stop-color="${damagedFill}" stop-opacity="1"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Lung outlines on top -->
+  <path d="${lungPathL}" fill="none" stroke="${dmgPct>30?'#3a1a0a':'#1a5a2a'}" stroke-width="1.8"/>
+  <path d="${lungPathR}" fill="none" stroke="${dmgPct>30?'#3a1a0a':'#1a5a2a'}" stroke-width="1.8"/>
+
+  <!-- Trachea & bronchi -->
+  <ellipse cx="90" cy="19" rx="7" ry="9" fill="#888" stroke="${airwayCol}" stroke-width="1"/>
+  <line x1="90" y1="28" x2="90" y2="117" stroke="${airwayCol}" stroke-width="2.2"/>
+  <line x1="90" y1="52" x2="62" y2="67" stroke="${airwayCol}" stroke-width="1.6"/>
+  <line x1="90" y1="72" x2="57" y2="87" stroke="${airwayCol}" stroke-width="1.4"/>
+  <line x1="90" y1="92" x2="60" y2="104" stroke="${airwayCol}" stroke-width="1.2"/>
+  <line x1="90" y1="52" x2="118" y2="67" stroke="${airwayCol}" stroke-width="1.6"/>
+  <line x1="90" y1="72" x2="123" y2="87" stroke="${airwayCol}" stroke-width="1.4"/>
+  <line x1="90" y1="92" x2="120" y2="104" stroke="${airwayCol}" stroke-width="1.2"/>
+
+  <!-- % label inside lung -->
+  <text x="90" y="148" text-anchor="middle" font-size="18" font-weight="800" font-family="Montserrat,sans-serif" fill="white" opacity="0.92">${lc.toFixed(0)}%</text>
+  <text x="90" y="164" text-anchor="middle" font-size="8.5" font-family="DM Sans,sans-serif" fill="white" opacity="0.7">healthy</text>
+  `;
+
+  const s=dmgPct<3?'Healthy':dmgPct<10?'Slightly affected':dmgPct<22?'Mildly damaged':dmgPct<35?'Moderately damaged':'Heavily damaged';
+  document.getElementById('lung-status').textContent=s;
+  document.getElementById('lung-pct').textContent=lc.toFixed(0)+'%';
+  const bar=document.getElementById('bar-lung');
+  bar.style.width=lc.toFixed(0)+'%';
+  bar.style.background=lc>85?'var(--healthy)':lc>70?'var(--warn)':'var(--danger)';
+}
+
+function renderMilestones(){
+  const ms=[
+    {t:'20 min',d:'Heart rate & blood pressure drop',h:0.33},
+    {t:'12 hours',d:'Carbon monoxide level normalises',h:12},
+    {t:'2 days',d:'Taste and smell start improving',h:48},
+    {t:'2 weeks',d:'Circulation improves, lung function up',h:336},
+    {t:'1 month',d:'Coughing and breathlessness decrease',h:720},
+    {t:'3 months',d:'Lung cilia regrow; infection risk drops',h:2160},
+    {t:'1 year',d:'Heart disease risk halved vs smoker',h:8760},
+    {t:'5 years',d:'Stroke risk equals that of a non-smoker',h:43800},
+    {t:'10 years',d:'Lung cancer risk drops by half',h:87600},
+  ];
+  const el=document.getElementById('milestones');
+  const hrs=state.quitDate?(new Date()-state.quitDate)/3600000:0;
+  el.innerHTML=ms.map(m=>{
+    const done=state.quitDate&&hrs>=m.h;
+    return `<div class="milestone"><div class="ms-dot ${done?'ms-done':'ms-pending'}"></div><div class="ms-text" style="color:${done?'var(--healthy)':'var(--text)'}">${m.d}</div><div class="ms-time">${m.t}</div></div>`;
+  }).join('');
+}
+
+function calcFD(){
+  const rate=parseFloat(document.getElementById('fd-rate').value)||6.5;
+  const yrs=parseInt(document.getElementById('fd-dur').value)||5;
+  const p=state.totalSpent;
+  const fv=p*Math.pow(1+rate/100,yrs);
+  const gain=fv-p;
+  document.getElementById('fd-invested').textContent='₹'+Math.round(p).toLocaleString('en-IN');
+  document.getElementById('fd-value').textContent='₹'+Math.round(fv).toLocaleString('en-IN');
+  document.getElementById('fd-gain').textContent='₹'+Math.round(gain).toLocaleString('en-IN');
+  // Update missed worth card in stats (always uses 6.5% 5yr as headline)
+  const missedFV=p*Math.pow(1+0.065,5);
+  document.getElementById('stat-missed').textContent='₹'+Math.round(missedFV).toLocaleString('en-IN');
+  const daySpend=state.yearsSmoked>0?Math.round(p/(state.yearsSmoked*365)):0;
+  document.getElementById('fd-insight').textContent=
+    'You have spent ₹'+Math.round(p).toLocaleString('en-IN')+' on '+state.totalCigs.toLocaleString('en-IN')+' cigarettes — about ₹'+daySpend+' per day. '+
+    'Had this been invested at '+rate+'% p.a. for '+yrs+' year(s), it would now be worth ₹'+Math.round(fv).toLocaleString('en-IN')+', generating ₹'+Math.round(gain).toLocaleString('en-IN')+' in interest alone.';
+}
+
+function renderBrandSpend(){
+  const el=document.getElementById('brand-spend');
+  const totals={};
+  state.log.forEach(l=>{totals[l.brand]=(totals[l.brand]||0)+l.price;});
+  if(!Object.keys(totals).length){el.innerHTML='<div style="color:var(--muted);font-size:.78rem;padding:.4rem 0">No logged cigs yet.</div>';return;}
+  const maxS=Math.max(...Object.values(totals));
+  el.innerHTML=Object.entries(totals).map(([idx,spend])=>{
+    const b=BRANDS[idx];if(!b)return'';
+    return '<div class="meter-row"><div class="meter-label"><span>'+b.name+'</span><span>₹'+Math.round(spend).toLocaleString('en-IN')+'</span></div><div class="meter-bar"><div class="meter-fill fill-tar" style="width:'+((spend/maxS)*100).toFixed(0)+'%"></div></div></div>';
+  }).join('');
+}
+
+function renderHistory(){
+  const tbody=document.getElementById('log-body');
+  const empty=document.getElementById('log-empty');
+  if(!state.log.length){tbody.innerHTML='';empty.style.display='block';return;}
+  empty.style.display='none';
+  let running=state.totalSpent;
+  tbody.innerHTML=[...state.log].reverse().slice(0,60).map(l=>{
+    const val='₹'+running.toFixed(0);running-=l.price;
+    const b=BRANDS[l.brand]||{name:'Custom'};
+    return '<tr><td>'+l.time.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'})+' '+l.time.toLocaleDateString('en-IN')+'</td><td>'+b.name+'</td><td style="color:'+(l.single?'var(--accent2)':'var(--muted)')+'">'+( l.single?'Single':'Pack')+'</td><td>₹'+l.price.toFixed(2)+'</td><td>'+val+'</td></tr>';
+  }).join('');
+}
+
+function renderBrandManage(){
+  const el=document.getElementById('brand-manage');
+  if(!state.favBrands.length){el.innerHTML='<div style="color:var(--muted);font-size:.78rem;">No brands yet.</div>';return;}
+  el.innerHTML=state.favBrands.map((i,pos)=>{
+    const b=BRANDS[i];if(!b)return'';
+    return '<div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:7px 10px;display:flex;justify-content:space-between;align-items:center;font-size:.78rem;"><span>'+b.name+'<br><span style="color:var(--muted);font-size:.68rem">₹'+b.price+'/pack</span></span><button onclick="removeBrand('+pos+')" style="background:none;border:none;color:var(--danger);cursor:pointer;font-size:.95rem;padding:2px 6px;">✕</button></div>';
+  }).join('');
+}
+function removeBrand(pos){state.favBrands.splice(pos,1);renderAll();}
+
+function applySettings(){
+  const y=parseFloat(document.getElementById('set-years').value);
+  const pd=parseInt(document.getElementById('set-perday').value);
+  if(!isNaN(y)&&y>=0)state.yearsSmoked=y;
+  if(!isNaN(pd)&&pd>0){state.perDay=pd;state.baselinePerDay=pd;}
+  recalcHistorical();renderAll();showToast('Settings updated!');
+}
+function populateSettings(){
+  document.getElementById('set-years').value=state.yearsSmoked;
+  document.getElementById('set-perday').value=state.perDay;
+}
+
+function toggleQuit(){
+  if(state.quitDate){if(confirm('Resume smoking? Quit date will be cleared.'))state.quitDate=null;}
+  else{state.quitDate=new Date();showToast('Quit date set! You can do it!');}
+  renderAll();
+}
+
+function switchTab(name){
+  const names=['log','health','money','settings','history'];
+  document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',names[i]===name));
+  document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));
+  document.getElementById('tab-'+name).classList.add('active');
+  if(name==='money')calcFD();
+  if(name==='settings'){populateSettings();renderBrandManage();}
+}
+
+function showToast(msg){
+  const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2000);
+}
+
+function renderAll(){renderBrandGrid();updateStats();updateMeters();renderLung();renderMilestones();calcFD();renderBrandSpend();renderHistory();}
+
+document.getElementById('lastsmoke').value=new Date().toISOString().slice(0,16);
+</script>
+</body>
+</html>
